@@ -43,15 +43,25 @@ def create_user(name, email, password):
     db_sess.commit()
 
 
-def create_review(text, user_id, raiting):
+def create_review(text, user_id, object_id, raiting):
     review = Review()
     review.text = text
     review.user_id = user_id
+    review.object_id = object_id
     review.raiting = raiting
     db_sess = create_session()
     db_sess.add(review)
     user = db_sess.query(User).filter(User.id == user_id).first()
     user.reviews_num += 1
+    db_sess.commit()
+
+
+def create_object(name, description):
+    object = Object()
+    object.name = name
+    object.description = description
+    db_sess = create_session()
+    db_sess.add(object)
     db_sess.commit()
 
 
@@ -77,11 +87,27 @@ class Review(SqlAlchemyBase):
     text = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
+    object_id = sqlalchemy.Column(sqlalchemy.Integer,
+                                sqlalchemy.ForeignKey("objects.id"))
     raiting = sqlalchemy.Column(sqlalchemy.Float)
     user = orm.relationship('User')
+    object = orm.relationship('Object')
+
+
+class Object(SqlAlchemyBase):
+    __tablename__ = 'objects'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer,
+                           primary_key=True, autoincrement=True)
+    name = sqlalchemy.Column(sqlalchemy.String)
+    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    reviews_num = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    reviews_raiting = sqlalchemy.Column(sqlalchemy.Float, default=0)
+
 
 global_init("data/base.sqlite3")
 create_user('Bob', 'bimba', '123')
 create_user('Bob', 'bimba2', '123')
-create_review('nice', 1, 0.2)
-create_review('nice', 2, 0.7)
+create_object('Hoi4', 'Strategy')
+create_review('nice', 1,1, 0.2)
+create_review('nice', 2, 2, 0.6)
