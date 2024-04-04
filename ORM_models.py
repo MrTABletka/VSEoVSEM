@@ -2,6 +2,7 @@ import sqlalchemy
 import sqlalchemy.orm as orm
 import datetime
 import hashlib
+import json
 from sqlalchemy.orm import Session
 
 SqlAlchemyBase = orm.declarative_base()
@@ -52,6 +53,7 @@ def create_review(text, user_id, object_id, raiting):
     db_sess = create_session()
     db_sess.add(review)
     user = db_sess.query(User).filter(User.id == user_id).first()
+    user.reviews_raiting = (user.reviews_raiting * user.reviews_num + raiting) / (user.reviews_num + 1)
     user.reviews_num += 1
     db_sess.commit()
 
@@ -63,6 +65,16 @@ def create_object(name, description):
     db_sess = create_session()
     db_sess.add(object)
     db_sess.commit()
+
+
+def info_user(email):
+    db_sess = create_session()
+    user = db_sess.query(User).filter(User.email == email).first()
+    answer = {"name": user.name,
+              "email": user.email,
+              "reviev_num": user.reviews_num,
+              "reviews_raiting": user.reviews_raiting}
+    return json.dumps(answer)
 
 
 class User(SqlAlchemyBase):
@@ -106,3 +118,4 @@ class Object(SqlAlchemyBase):
 
 
 global_init("data/base.sqlite3")
+print(info_user('bimba'))
