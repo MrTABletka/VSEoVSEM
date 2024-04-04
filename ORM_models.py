@@ -106,8 +106,3 @@ class Object(SqlAlchemyBase):
 
 
 global_init("data/base.sqlite3")
-create_user('Bob', 'bimba', '123')
-create_user('Bob', 'bimba2', '123')
-create_object('Hoi4', 'Strategy')
-create_review('nice', 1,1, 0.2)
-create_review('nice', 2, 2, 0.6)
