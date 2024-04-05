@@ -83,13 +83,21 @@ class User(SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String)
-    role = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    role = sqlalchemy.Column(sqlalchemy.String, default='User')
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     reviews_num = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     reviews_raiting = sqlalchemy.Column(sqlalchemy.Float, default=0)
+    is_active = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+
+    def check_password(self, password):
+        salt = 'salt'.encode()
+        check = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 1000)
+        if self.hashed_password == check:
+            return True
+        return False
 
 class Review(SqlAlchemyBase):
     __tablename__ = 'reviews'
@@ -118,4 +126,3 @@ class Object(SqlAlchemyBase):
 
 
 global_init("data/base.sqlite3")
-print(info_user('bimba'))
