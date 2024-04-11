@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Отзывы</h1>
+{% for item in objs%}
+<div class="col-md6 border rounded">
+    {{item.text}}
+    <div>
+        {{item.review_raiting}}
+    </div>
+</div>
+{% endfor %}
+<a href="/add_reviev/{{id_obj}}" class="btn btn-secondary">Добавить отзыв</a>
+{% endblock %}
