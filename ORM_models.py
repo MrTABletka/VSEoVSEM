@@ -3,6 +3,8 @@ import sqlalchemy.orm as orm
 import datetime
 import hashlib
 import json
+from flask_login import UserMixin
+from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import Session
 
 SqlAlchemyBase = orm.declarative_base()
@@ -77,7 +79,7 @@ def info_user(email):
     return json.dumps(answer)
 
 
-class User(SqlAlchemyBase):
+class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
@@ -90,7 +92,6 @@ class User(SqlAlchemyBase):
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     reviews_num = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     reviews_raiting = sqlalchemy.Column(sqlalchemy.Float, default=0)
-    is_active = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     def check_password(self, password):
         salt = 'salt'.encode()
