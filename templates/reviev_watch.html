@@ -6,8 +6,15 @@
 <div class="col-md6 border rounded">
     {{item.text}}
     <div>
-        {{item.review_raiting}}
+        {{item.raiting}}
     </div>
+    {% if current_user.role == "Admin" %}
+    <div>
+        <a href="/news_delete/{{ item.id }}&{{ item.object_id }}" class="btn btn-danger">
+            Удалить
+        </a>
+    </div>
+{% endif %}
 </div>
 {% endfor %}
 <a href="/add_reviev/{{id_obj}}" class="btn btn-secondary">Добавить отзыв</a>

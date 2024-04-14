@@ -45,6 +45,7 @@ def index():
     objs = db_sess.query(Object).all()
     return render_template("index.html", news=objs)
 
+
 @app.route('/watch_revievs/<string:name>', methods=['GET', 'POST'])
 @login_required
 def watch_revievs(name):
@@ -52,6 +53,7 @@ def watch_revievs(name):
     id_obj = db_sess.query(Object).filter(Object.name == name).first().id
     objs = db_sess.query(Review).filter(Review.object_id == id_obj).all()
     return render_template("reviev_watch.html", objs=objs, id_obj=id_obj)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
@@ -77,7 +79,6 @@ def reqister():
 #    create_object(data["name"], data["des"])
 #    return data["name"]
 
-
 @app.route('/objects', methods=['GET', 'POST'])
 @login_required
 def add_obj():
@@ -88,27 +89,47 @@ def add_obj():
     return render_template('obj.html', title='Добавление новости',
                            form=form)
 
+
 @app.route('/add_reviev/<int:id_obj>', methods=['GET', 'POST'])
 @login_required
 def add_reviev(id_obj):
     form = RevForm()
     db_sess = create_session()
-    print(id_obj)
     if form.validate_on_submit():
-        if form.raiting1.data / form.raiting2.data < 1 and form.raiting1.data / form.raiting2.data > 0:
-            create_review(form.content.data, current_user.get_id(), id_obj, form.raiting1.data / form.raiting2.data)
-        else:
-            return render_template('reviev.html', title='Добавление отзыва',
-                                   form=form, message="Выставленный балл больше единицы")
+        if form.raiting2 != 0:
+            if form.raiting1.data / form.raiting2.data < 1 and form.raiting1.data / form.raiting2.data > 0:
+                create_review(form.content.data, current_user.get_id(), id_obj, round(form.raiting1.data / form.raiting2.data, 2))
+            else:
+                return render_template('reviev.html', title='Добавление отзыва',
+                                   form=form, message="Выставленный балл некорректен")
         return redirect('/index')
     return render_template('reviev.html', title='Добавление отзыва',
                            form=form)
+
+
+@app.route('/profile/<int:id_user>')
+@login_required
+def profile(id_user):
+    db_sess = create_session()
+    user =  db_sess.query(User).filter(User.id == id_user).first()
+    return render_template('profile.html', title='Профиль', user=user)
+
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect("/")
+
+
+@app.route('/news_delete/<int:id>&<int:id_obj>', methods=['GET', 'POST'])
+@login_required
+def news_delete(id, id_obj):
+    db_sess = create_session()
+    db_sess.query(Review).filter(Review.id == id).delete()
+    name = db_sess.query(Object).filter(Object.id == id_obj).first().name
+    db_sess.commit()
+    return redirect(f'/watch_revievs/{name}')
 
 
 if __name__ == '__main__':

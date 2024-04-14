@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Имя: {{user.name}}</h1>
+<div>
+    <h1>Почта: {{user.email}}</h1>>
+</div>
+<div>
+    Роль: {{user.role}}
+</div>
+ <a class="navbar-brand" href="/logout">Выйти из учетной записи</a>
+{% endblock %}
