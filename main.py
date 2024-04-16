@@ -71,10 +71,11 @@ def reqister():
 
         create_user(form.name.data, form.email.data, form.password.data)
         return redirect("/login")
-    return render_template('register.html', title='Регистрация', form=form, message='read')
+    return render_template('register.html', title='Регистрация', form=form)
 
-#@app.route('/api/apikey123/create_obj/<string:dat>', methods=['POST'])
-#def create_obj(dat):
+
+# @app.route('/api/apikey123/create_obj/<string:dat>', methods=['POST'])
+# def create_obj(dat):
 #    data = json.loads(dat)
 #    create_object(data["name"], data["des"])
 #    return data["name"]
@@ -98,10 +99,15 @@ def add_reviev(id_obj):
     if form.validate_on_submit():
         if form.raiting2 != 0:
             if form.raiting1.data / form.raiting2.data < 1 and form.raiting1.data / form.raiting2.data > 0:
-                create_review(form.content.data, current_user.get_id(), id_obj, round(form.raiting1.data / form.raiting2.data, 2))
+                if db_sess.query(Review).filter(Review.user_id == current_user.id, Review.object_id == id_obj).first() == None:
+                    create_review(form.content.data, current_user.get_id(), id_obj,
+                                  round(form.raiting1.data / form.raiting2.data, 2))
+                else:
+                    return render_template('reviev.html', title='Добавление отзыва',
+                                           form=form, message="Вы уже написали отзыв на это")
             else:
                 return render_template('reviev.html', title='Добавление отзыва',
-                                   form=form, message="Выставленный балл некорректен")
+                                       form=form, message="Выставленный балл некорректен")
         return redirect('/index')
     return render_template('reviev.html', title='Добавление отзыва',
                            form=form)
@@ -111,7 +117,7 @@ def add_reviev(id_obj):
 @login_required
 def profile(id_user):
     db_sess = create_session()
-    user =  db_sess.query(User).filter(User.id == id_user).first()
+    user = db_sess.query(User).filter(User.id == id_user).first()
     return render_template('profile.html', title='Профиль', user=user)
 
 
@@ -126,7 +132,15 @@ def logout():
 @login_required
 def news_delete(id, id_obj):
     db_sess = create_session()
+    obj = db_sess.query(Object).filter(Object.id == id_obj).first()
+    if obj.reviews_num != 1:
+        db_sess.query(Object).filter(Object.id == id_obj).first().reviews_raiting = \
+            (obj.reviews_raiting * obj.reviews_num - db_sess.query(Review).filter(
+                Review.id == id).first().raiting) / obj.reviews_num
+    else:
+        db_sess.query(Object).filter(Object.id == id_obj).first().reviews_raiting = 0
     db_sess.query(Review).filter(Review.id == id).delete()
+    db_sess.query(Object).filter(Object.id == id_obj).first().reviews_num -= 1
     name = db_sess.query(Object).filter(Object.id == id_obj).first().name
     db_sess.commit()
     return redirect(f'/watch_revievs/{name}')

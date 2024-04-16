@@ -54,9 +54,9 @@ def create_review(text, user_id, object_id, raiting):
     review.raiting = raiting
     db_sess = create_session()
     db_sess.add(review)
-    user = db_sess.query(User).filter(User.id == user_id).first()
-    user.reviews_raiting = (user.reviews_raiting * user.reviews_num + raiting) / (user.reviews_num + 1)
-    user.reviews_num += 1
+    obj = db_sess.query(Object).filter(Object.id == object_id).first()
+    obj.reviews_raiting = (obj.reviews_raiting * obj.reviews_num + raiting) / (obj.reviews_num + 1)
+    obj.reviews_num += 1
     db_sess.commit()
 
 
